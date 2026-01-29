@@ -3,15 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Streamable Discord Fix</title>
+    <title>Streamable Viewer</title>
     
     <!-- Discord Embed Metadata -->
     <meta property="og:title" content="Streamable Discord Fix">
-    <meta property="og:description" content="Watch Streamable videos in Discord">
+    <meta property="og:description" content="Watch Streamable videos directly in Discord">
     <meta property="og:type" content="video.other">
     <meta property="og:video:type" content="text/html">
     <meta property="og:video:width" content="1280">
     <meta property="og:video:height" content="720">
+    <meta property="og:video:url" content="https://streamable.com/">
+    <meta property="og:image" content="https://assets.streamable.com/static/2e2f1e5c6e3e8f0a9b8c7d6e5f4a3b2c1d0e9f8a7b6c5d4e3f2a1b0c9d8e7f6.png">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
         * {
@@ -20,49 +25,251 @@
             box-sizing: border-box;
         }
         
+        :root {
+            --primary: #5865F2;
+            --primary-dark: #4752C4;
+            --secondary: #2F3136;
+            --background: #36393F;
+            --surface: #40444B;
+            --text: #FFFFFF;
+            --text-secondary: #B9BBBE;
+            --success: #3BA55C;
+            --error: #ED4245;
+            --border: #202225;
+        }
+        
         body {
-            background: #36393f;
-            color: white;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #1a1c21 0%, #2c2f33 100%);
+            color: var(--text);
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
             min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 1400px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            background: rgba(32, 34, 37, 0.8);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            padding: 40px;
+            box-shadow: 
+                0 20px 40px rgba(0, 0, 0, 0.4),
+                0 1px 3px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        @media (max-width: 1024px) {
+            .container {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+        }
+        
+        .left-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+        
+        .right-panel {
             display: flex;
             flex-direction: column;
         }
         
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-            flex: 1;
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
         }
         
-        header {
-            text-align: center;
-            margin-bottom: 30px;
-            padding: 20px;
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 10px;
+        .logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+        
+        .logo-icon {
+            font-size: 32px;
+            color: var(--primary);
         }
         
         h1 {
-            color: #5865F2;
-            margin-bottom: 10px;
+            font-size: 36px;
+            font-weight: 800;
+            background: linear-gradient(90deg, var(--primary), #9B59B6);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 8px;
         }
         
-        .video-container {
-            background: #2f3136;
-            border-radius: 10px;
-            padding: 20px;
+        .tagline {
+            color: var(--text-secondary);
+            font-size: 16px;
+            letter-spacing: 0.5px;
+        }
+        
+        .input-card {
+            background: linear-gradient(145deg, #2a2d32, #23262a);
+            border-radius: 20px;
+            padding: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+        
+        .input-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 25px;
+        }
+        
+        .input-header i {
+            font-size: 22px;
+            color: var(--primary);
+            background: rgba(88, 101, 242, 0.1);
+            padding: 10px;
+            border-radius: 12px;
+        }
+        
+        .input-header h2 {
+            font-size: 22px;
+            font-weight: 700;
+        }
+        
+        .input-group {
+            margin-bottom: 25px;
+        }
+        
+        .input-with-icon {
+            position: relative;
             margin-bottom: 20px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .input-with-icon i {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+            font-size: 18px;
+        }
+        
+        input[type="text"] {
+            width: 100%;
+            padding: 18px 20px 18px 55px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 14px;
+            color: var(--text);
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        
+        input[type="text"]:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(88, 101, 242, 0.2);
+        }
+        
+        input[type="text"]::placeholder {
+            color: var(--text-secondary);
+        }
+        
+        .button-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        button {
+            padding: 18px 24px;
+            border: none;
+            border-radius: 14px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), #7289DA);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: linear-gradient(135deg, var(--primary-dark), #5B6EAE);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(88, 101, 242, 0.3);
+        }
+        
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+        
+        .preview-card {
+            background: linear-gradient(145deg, #2a2d32, #23262a);
+            border-radius: 20px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            height: 100%;
+        }
+        
+        .preview-header {
+            padding: 25px 30px;
+            background: rgba(0, 0, 0, 0.2);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .preview-header h2 {
+            font-size: 22px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .preview-header i {
+            color: var(--primary);
+            font-size: 20px;
+        }
+        
+        .video-id-display {
+            background: rgba(88, 101, 242, 0.1);
+            padding: 8px 16px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            font-weight: 600;
+            color: var(--primary);
         }
         
         .video-wrapper {
             position: relative;
-            padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
-            height: 0;
-            overflow: hidden;
-            border-radius: 8px;
+            padding-bottom: 56.25%;
             background: #000;
         }
         
@@ -75,404 +282,463 @@
             border: none;
         }
         
-        .input-section {
-            background: #2f3136;
-            border-radius: 10px;
+        .share-card {
+            background: linear-gradient(145deg, #2a2d32, #23262a);
+            border-radius: 20px;
+            padding: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+        
+        .share-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 25px;
+        }
+        
+        .share-header i {
+            font-size: 22px;
+            color: var(--success);
+            background: rgba(59, 165, 92, 0.1);
+            padding: 10px;
+            border-radius: 12px;
+        }
+        
+        .share-header h2 {
+            font-size: 22px;
+            font-weight: 700;
+        }
+        
+        .share-link-container {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 14px;
             padding: 20px;
             margin-bottom: 20px;
-        }
-        
-        .input-group {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 15px;
-        }
-        
-        input[type="text"] {
-            flex: 1;
-            padding: 12px;
-            background: #40444b;
-            border: 1px solid #202225;
-            border-radius: 5px;
-            color: white;
-            font-size: 14px;
-        }
-        
-        input[type="text"]::placeholder {
-            color: #b9bbbe;
-        }
-        
-        button {
-            background: #5865F2;
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: background 0.2s;
-        }
-        
-        button:hover {
-            background: #4752C4;
-        }
-        
-        .share-section {
-            background: #2f3136;
-            border-radius: 10px;
-            padding: 20px;
-            margin-top: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
         }
         
         .share-link {
-            background: #40444b;
-            padding: 15px;
-            border-radius: 5px;
-            margin-top: 10px;
+            font-family: 'Courier New', monospace;
             word-break: break-all;
-            font-family: monospace;
-            font-size: 14px;
-        }
-        
-        .share-link a {
-            color: #00b0f4;
-            text-decoration: none;
-        }
-        
-        .share-link a:hover {
-            text-decoration: underline;
-        }
-        
-        .how-to-use {
-            background: #2f3136;
-            border-radius: 10px;
-            padding: 20px;
-            margin-top: 20px;
-        }
-        
-        .how-to-use ol {
-            padding-left: 20px;
-            margin-top: 10px;
-        }
-        
-        .how-to-use li {
-            margin-bottom: 8px;
+            color: var(--text);
+            font-size: 15px;
             line-height: 1.5;
         }
         
-        .no-video {
+        .share-link a {
+            color: var(--primary);
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        
+        .share-link a:hover {
+            color: #7289DA;
+            text-decoration: underline;
+        }
+        
+        .copy-btn {
+            width: 100%;
+            background: linear-gradient(135deg, var(--success), #2D7D46);
+            color: white;
+        }
+        
+        .copy-btn:hover {
+            background: linear-gradient(135deg, #2D7D46, #1F5A35);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(59, 165, 92, 0.3);
+        }
+        
+        .copy-btn.copied {
+            background: linear-gradient(135deg, #7289DA, #5865F2);
+        }
+        
+        .status-container {
+            position: fixed;
+            top: 30px;
+            right: 30px;
+            z-index: 1000;
+        }
+        
+        .status-message {
+            background: rgba(32, 34, 37, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 14px;
+            padding: 18px 24px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            transform: translateX(400px);
+            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            border-left: 4px solid var(--primary);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        }
+        
+        .status-message.show {
+            transform: translateX(0);
+        }
+        
+        .status-message.success {
+            border-left-color: var(--success);
+        }
+        
+        .status-message.error {
+            border-left-color: var(--error);
+        }
+        
+        .status-message i {
+            font-size: 22px;
+        }
+        
+        .status-message.success i {
+            color: var(--success);
+        }
+        
+        .status-message.error i {
+            color: var(--error);
+        }
+        
+        .status-text {
+            flex: 1;
+        }
+        
+        .status-title {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        
+        .status-subtitle {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+        
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
             text-align: center;
-            padding: 40px;
-            color: #b9bbbe;
+            z-index: 10;
+        }
+        
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            border-top-color: var(--primary);
+            animation: spin 1s ease-in-out infinite;
+            margin: 0 auto 20px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .loading-text {
+            color: var(--text-secondary);
+            font-size: 16px;
+        }
+        
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 40px;
+            text-align: center;
+        }
+        
+        .empty-state i {
+            font-size: 64px;
+            color: var(--text-secondary);
+            opacity: 0.3;
+            margin-bottom: 25px;
+        }
+        
+        .empty-state h3 {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: var(--text);
+        }
+        
+        .empty-state p {
+            color: var(--text-secondary);
+            line-height: 1.6;
+            max-width: 400px;
         }
         
         .hidden {
             display: none;
         }
         
-        .status {
-            margin-top: 10px;
-            padding: 10px;
-            border-radius: 5px;
-            text-align: center;
+        .pulse {
+            animation: pulse 2s infinite;
         }
         
-        .success {
-            background: rgba(88, 101, 242, 0.2);
-            color: #b5bae3;
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
         }
         
-        .error {
-            background: rgba(237, 66, 69, 0.2);
-            color: #e3b5b5;
+        /* Floating particles background */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
         }
         
-        /* Responsive design */
-        @media (max-width: 768px) {
-            .container {
-                padding: 10px;
-            }
-            
-            .input-group {
-                flex-direction: column;
-            }
-            
-            button {
-                width: 100%;
-            }
-        }
-        
-        footer {
-            text-align: center;
-            padding: 20px;
-            color: #b9bbbe;
-            font-size: 14px;
-            margin-top: auto;
-        }
-        
-        /* Loading spinner */
-        .spinner {
-            border: 3px solid rgba(255, 255, 255, 0.1);
+        .particle {
+            position: absolute;
+            background: rgba(88, 101, 242, 0.1);
             border-radius: 50%;
-            border-top: 3px solid #5865F2;
-            width: 30px;
-            height: 30px;
-            animation: spin 1s linear infinite;
-            margin: 20px auto;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        .copy-btn {
-            background: #4f545c;
-            padding: 8px 15px;
-            font-size: 12px;
-            margin-top: 10px;
-        }
-        
-        .copy-btn:hover {
-            background: #5d6269;
         }
     </style>
 </head>
 <body>
+    <!-- Particles Background -->
+    <div class="particles" id="particles"></div>
+    
+    <!-- Status Messages -->
+    <div class="status-container" id="statusContainer"></div>
+    
+    <!-- Main Container -->
     <div class="container">
-        <header>
-            <h1>Streamable Discord Fix</h1>
-            <p>Watch Streamable videos in Discord embeds using URL fragments</p>
-        </header>
-        
-        <div id="videoContainer" class="video-container hidden">
-            <div class="video-wrapper">
-                <iframe id="videoPlayer" allowfullscreen></iframe>
+        <!-- Left Panel -->
+        <div class="left-panel">
+            <!-- Header -->
+            <div class="header">
+                <div class="logo">
+                    <i class="fas fa-video logo-icon"></i>
+                </div>
+                <h1>Streamable Discord Fix</h1>
+                <p class="tagline">Watch Streamable videos directly in Discord embeds</p>
+            </div>
+            
+            <!-- Input Card -->
+            <div class="input-card">
+                <div class="input-header">
+                    <i class="fas fa-link"></i>
+                    <h2>Enter Streamable Link</h2>
+                </div>
+                
+                <div class="input-group">
+                    <div class="input-with-icon">
+                        <i class="fas fa-play-circle"></i>
+                        <input type="text" id="streamableUrl" placeholder="https://streamable.com/abc123 or just abc123">
+                    </div>
+                </div>
+                
+                <div class="button-group">
+                    <button class="btn-primary" id="loadBtn">
+                        <i class="fas fa-play"></i>
+                        Load Video
+                    </button>
+                    <button class="btn-secondary" id="clearBtn">
+                        <i class="fas fa-times"></i>
+                        Clear
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Share Card -->
+            <div class="share-card">
+                <div class="share-header">
+                    <i class="fas fa-share-alt"></i>
+                    <h2>Share in Discord</h2>
+                </div>
+                
+                <div class="share-link-container">
+                    <div class="share-link" id="shareLink">
+                        Paste a Streamable link to generate shareable URL
+                    </div>
+                </div>
+                
+                <button class="copy-btn" id="copyBtn">
+                    <i class="fas fa-copy"></i>
+                    Copy Discord Link
+                </button>
             </div>
         </div>
         
-        <div id="noVideo" class="no-video">
-            <p>Enter a Streamable ID below to watch or share a video</p>
-            <div class="spinner hidden" id="loadingSpinner"></div>
-        </div>
-        
-        <div class="input-section">
-            <h2>Enter Streamable Video ID</h2>
-            <div class="input-group">
-                <input type="text" id="videoIdInput" placeholder="Enter Streamable ID (e.g., pneoknwein)">
-                <button id="loadBtn">Load Video</button>
+        <!-- Right Panel - Preview -->
+        <div class="right-panel">
+            <div class="preview-card">
+                <div class="preview-header">
+                    <h2>
+                        <i class="fas fa-discord"></i>
+                        Preview
+                        <span class="video-id-display" id="videoIdDisplay">No Video</span>
+                    </h2>
+                    <div class="preview-controls">
+                        <i class="fas fa-expand-alt" id="fullscreenBtn" style="cursor: pointer; color: var(--text-secondary);"></i>
+                    </div>
+                </div>
+                
+                <div class="video-wrapper" id="videoWrapper">
+                    <div class="empty-state" id="emptyState">
+                        <i class="fas fa-video-slash"></i>
+                        <h3>No Video Loaded</h3>
+                        <p>Enter a Streamable URL above to preview and generate a Discord-compatible link</p>
+                    </div>
+                    
+                    <div class="loading hidden" id="loadingState">
+                        <div class="spinner"></div>
+                        <div class="loading-text">Loading video...</div>
+                    </div>
+                    
+                    <iframe id="videoPlayer" class="hidden" allowfullscreen></iframe>
+                </div>
             </div>
-            <div id="status" class="status hidden"></div>
-        </div>
-        
-        <div class="share-section">
-            <h2>Share Video</h2>
-            <p>Copy this link and paste in Discord:</p>
-            <div class="share-link">
-                <a id="shareLink" href="#" target="_blank"></a>
-            </div>
-            <button id="copyBtn" class="copy-btn">Copy Link</button>
-        </div>
-        
-        <div class="how-to-use">
-            <h2>How to Use</h2>
-            <ol>
-                <li>Find your Streamable video ID (the part after streamable.com/)</li>
-                <li>Enter it above and click "Load Video"</li>
-                <li>Copy the generated share link</li>
-                <li>Paste the link in Discord</li>
-                <li>OR bookmark: <code>https://your-site.web.app#[video-id]</code></li>
-            </ol>
-            <p><strong>Pro Tip:</strong> You can directly use <code>https://your-site.web.app#[streamable-id]</code> without the input form!</p>
         </div>
     </div>
-    
-    <footer>
-        <p>This tool helps you watch Streamable videos in Discord embeds. No server-side code needed.</p>
-    </footer>
 
     <script>
         // DOM Elements
-        const videoContainer = document.getElementById('videoContainer');
-        const noVideo = document.getElementById('noVideo');
-        const videoPlayer = document.getElementById('videoPlayer');
-        const videoIdInput = document.getElementById('videoIdInput');
+        const streamableUrl = document.getElementById('streamableUrl');
         const loadBtn = document.getElementById('loadBtn');
-        const status = document.getElementById('status');
-        const shareLink = document.getElementById('shareLink');
+        const clearBtn = document.getElementById('clearBtn');
         const copyBtn = document.getElementById('copyBtn');
-        const loadingSpinner = document.getElementById('loadingSpinner');
+        const fullscreenBtn = document.getElementById('fullscreenBtn');
+        const videoWrapper = document.getElementById('videoWrapper');
+        const videoPlayer = document.getElementById('videoPlayer');
+        const emptyState = document.getElementById('emptyState');
+        const loadingState = document.getElementById('loadingState');
+        const shareLink = document.getElementById('shareLink');
+        const videoIdDisplay = document.getElementById('videoIdDisplay');
+        const statusContainer = document.getElementById('statusContainer');
+        const particles = document.getElementById('particles');
         
-        // Discord embed metadata elements
-        const metaTitle = document.querySelector('meta[property="og:title"]');
-        const metaDescription = document.querySelector('meta[property="og:description"]');
-        const metaVideo = document.querySelector('meta[property="og:video"]');
+        // State
+        let currentVideoId = '';
+        let statusTimeout = null;
         
-        // Extract video ID from URL hash
-        function getVideoIdFromHash() {
-            const hash = window.location.hash.substring(1);
-            // Clean the hash - remove any non-alphanumeric characters
-            return hash.replace(/[^a-zA-Z0-9]/g, '');
-        }
-        
-        // Update URL hash
-        function updateHash(videoId) {
-            window.location.hash = videoId;
+        // Extract Streamable ID from various URL formats
+        function extractStreamableId(url) {
+            if (!url) return '';
+            
+            // Remove whitespace
+            url = url.trim();
+            
+            // If it's just an ID (no URL)
+            if (/^[a-zA-Z0-9]+$/.test(url)) {
+                return url;
+            }
+            
+            try {
+                // Handle different Streamable URL formats
+                const patterns = [
+                    /streamable\.com\/([a-zA-Z0-9]+)/,
+                    /streamable\.com\/o\/([a-zA-Z0-9]+)/,
+                    /streamable\.com\/e\/([a-zA-Z0-9]+)/,
+                    /streamable\.com\/s\/([a-zA-Z0-9]+)/,
+                    /^\/?([a-zA-Z0-9]+)\/?$/
+                ];
+                
+                for (const pattern of patterns) {
+                    const match = url.match(pattern);
+                    if (match && match[1]) {
+                        return match[1];
+                    }
+                }
+            } catch (e) {
+                console.error('Error parsing URL:', e);
+            }
+            
+            return '';
         }
         
         // Load video by ID
-        function loadVideo(videoId) {
+        async function loadVideo(videoId) {
             if (!videoId) {
-                showError('Please enter a valid Streamable video ID');
+                showError('Please enter a valid Streamable link or ID');
                 return false;
             }
             
-            // Show loading
-            loadingSpinner.classList.remove('hidden');
-            status.classList.add('hidden');
+            // Show loading state
+            emptyState.classList.add('hidden');
+            loadingState.classList.remove('hidden');
+            videoPlayer.classList.add('hidden');
             
-            // Test if the video exists by trying to load it
-            const testUrl = `https://streamable.com/o/${videoId}`;
-            
-            // Create a hidden iframe to test the video
-            const testIframe = document.createElement('iframe');
-            testIframe.style.display = 'none';
-            testIframe.src = testUrl;
-            
-            testIframe.onload = function() {
-                loadingSpinner.classList.add('hidden');
+            try {
+                // Test if video exists
+                const testResponse = await fetch(`https://streamable.com/o/${videoId}`, {
+                    mode: 'no-cors',
+                    method: 'HEAD'
+                }).catch(() => ({ ok: true }));
                 
-                // Video exists, proceed to embed
-                const embedUrl = `https://streamable.com/e/${videoId}?autoplay=1`;
+                // Always proceed - we can't reliably detect if video exists due to CORS
+                // Streamable's embed will show an error if video doesn't exist
+                
+                const embedUrl = `https://streamable.com/e/${videoId}?autoplay=1&loop=0`;
                 
                 // Update video player
                 videoPlayer.src = embedUrl;
                 
-                // Show video container
-                videoContainer.classList.remove('hidden');
-                noVideo.classList.add('hidden');
+                // Update UI
+                setTimeout(() => {
+                    loadingState.classList.add('hidden');
+                    videoPlayer.classList.remove('hidden');
+                    videoIdDisplay.textContent = videoId;
+                    currentVideoId = videoId;
+                    
+                    // Generate and show share link
+                    updateShareLink(videoId);
+                    
+                    // Update Discord metadata
+                    updateDiscordMetadata(videoId);
+                    
+                    // Show success
+                    showSuccess('Video Loaded', `Ready to share in Discord`);
+                    
+                    // Update URL hash for bookmarking
+                    window.location.hash = videoId;
+                }, 500);
                 
-                // Update share link
-                const currentUrl = window.location.origin + window.location.pathname;
-                const shareUrl = `${currentUrl}#${videoId}`;
-                shareLink.textContent = shareUrl;
-                shareLink.href = shareUrl;
+                return true;
                 
-                // Update Discord embed metadata
-                metaTitle.content = `Streamable Video: ${videoId}`;
-                metaDescription.content = `Watch Streamable video ${videoId} in Discord`;
-                
-                // Update Discord embed video URL (important!)
-                const metaTags = document.querySelectorAll('meta[property^="og:video"]');
-                metaTags.forEach(tag => {
-                    if (tag.getAttribute('property') === 'og:video') {
-                        tag.content = shareUrl;
-                    }
-                    if (tag.getAttribute('property') === 'og:video:url') {
-                        tag.content = shareUrl;
-                    }
-                });
-                
-                showSuccess(`Video ${videoId} loaded successfully!`);
-            };
-            
-            testIframe.onerror = function() {
-                loadingSpinner.classList.add('hidden');
-                showError(`Video "${videoId}" not found on Streamable`);
-            };
-            
-            document.body.appendChild(testIframe);
-            
-            // Remove test iframe after a short delay
-            setTimeout(() => {
-                if (document.body.contains(testIframe)) {
-                    document.body.removeChild(testIframe);
-                }
-            }, 5000);
-            
-            return true;
+            } catch (error) {
+                console.error('Error loading video:', error);
+                loadingState.classList.add('hidden');
+                emptyState.classList.remove('hidden');
+                showError('Error Loading', 'Could not load video. Check your link.');
+                return false;
+            }
         }
         
-        // Show success message
-        function showSuccess(message) {
-            status.textContent = message;
-            status.className = 'status success';
-            status.classList.remove('hidden');
-            setTimeout(() => {
-                status.classList.add('hidden');
-            }, 3000);
-        }
-        
-        // Show error message
-        function showError(message) {
-            status.textContent = message;
-            status.className = 'status error';
-            status.classList.remove('hidden');
-            setTimeout(() => {
-                status.classList.add('hidden');
-            }, 5000);
-        }
-        
-        // Copy share link to clipboard
-        function copyToClipboard() {
-            const text = shareLink.textContent;
-            navigator.clipboard.writeText(text).then(() => {
-                showSuccess('Link copied to clipboard!');
-            }).catch(err => {
-                showError('Failed to copy link: ' + err);
-            });
-        }
-        
-        // Event Listeners
-        loadBtn.addEventListener('click', () => {
-            const videoId = videoIdInput.value.trim();
-            if (loadVideo(videoId)) {
-                updateHash(videoId);
-            }
-        });
-        
-        videoIdInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                loadBtn.click();
-            }
-        });
-        
-        copyBtn.addEventListener('click', copyToClipboard);
-        
-        // Handle URL hash changes
-        window.addEventListener('hashchange', () => {
-            const videoId = getVideoIdFromHash();
-            if (videoId) {
-                videoIdInput.value = videoId;
-                loadVideo(videoId);
-            }
-        });
-        
-        // Check for video ID on page load
-        document.addEventListener('DOMContentLoaded', () => {
-            const initialVideoId = getVideoIdFromHash();
-            if (initialVideoId) {
-                videoIdInput.value = initialVideoId;
-                loadVideo(initialVideoId);
-            }
-        });
-        
-        // Also update metadata when video loads (for Discord crawler)
-        function updatePageMetadata(videoId) {
-            // Update page title
-            document.title = `Streamable: ${videoId}`;
+        // Update share link
+        function updateShareLink(videoId) {
+            const baseUrl = window.location.origin + window.location.pathname;
+            const shareUrl = `${baseUrl}#${videoId}`;
             
-            // Update meta tags for better Discord embedding
+            shareLink.innerHTML = `
+                Copy and paste this link in Discord:<br>
+                <a href="${shareUrl}" target="_blank">${shareUrl}</a>
+            `;
+            
+            copyBtn.disabled = false;
+        }
+        
+        // Update Discord Open Graph metadata
+        function updateDiscordMetadata(videoId) {
             const metaTags = [
                 { property: 'og:title', content: `Streamable Video: ${videoId}` },
                 { property: 'og:description', content: 'Watch this Streamable video in Discord' },
                 { property: 'og:url', content: window.location.href },
-                { property: 'og:image', content: `https://cdn-cf-east.streamable.com/image/${videoId}.jpg` },
-                { property: 'og:video', content: window.location.href },
-                { property: 'og:video:url', content: window.location.href },
+                { property: 'og:video', content: window.location.origin + window.location.pathname + '#' + videoId },
+                { property: 'og:video:url', content: window.location.origin + window.location.pathname + '#' + videoId },
+                { property: 'og:video:secure_url', content: window.location.origin + window.location.pathname + '#' + videoId },
                 { property: 'og:video:type', content: 'text/html' },
                 { property: 'og:video:width', content: '1280' },
-                { property: 'og:video:height', content: '720' }
+                { property: 'og:video:height', content: '720' },
+                { property: 'og:image', content: `https://cdn-cf-east.streamable.com/image/${videoId}.jpg` }
             ];
             
             metaTags.forEach(meta => {
@@ -484,6 +750,214 @@
                 }
                 tag.setAttribute('content', meta.content);
             });
+            
+            // Also update page title for better Discord preview
+            document.title = `Streamable: ${videoId}`;
+        }
+        
+        // Show status message
+        function showStatus(type, title, message = '') {
+            // Clear existing timeout
+            if (statusTimeout) {
+                clearTimeout(statusTimeout);
+            }
+            
+            // Create message element
+            const status = document.createElement('div');
+            status.className = `status-message ${type}`;
+            
+            const icon = type === 'success' ? 'fas fa-check-circle' : 'fas fa-exclamation-circle';
+            
+            status.innerHTML = `
+                <i class="${icon}"></i>
+                <div class="status-text">
+                    <div class="status-title">${title}</div>
+                    ${message ? `<div class="status-subtitle">${message}</div>` : ''}
+                </div>
+            `;
+            
+            // Add to container
+            statusContainer.appendChild(status);
+            
+            // Animate in
+            setTimeout(() => status.classList.add('show'), 10);
+            
+            // Remove after delay
+            statusTimeout = setTimeout(() => {
+                status.classList.remove('show');
+                setTimeout(() => {
+                    if (status.parentNode) {
+                        status.parentNode.removeChild(status);
+                    }
+                }, 500);
+            }, 4000);
+        }
+        
+        function showSuccess(title, message = '') {
+            showStatus('success', title, message);
+        }
+        
+        function showError(title, message = '') {
+            showStatus('error', title, message);
+        }
+        
+        // Copy to clipboard
+        async function copyToClipboard() {
+            if (!currentVideoId) {
+                showError('No Video', 'Please load a video first');
+                return;
+            }
+            
+            const baseUrl = window.location.origin + window.location.pathname;
+            const textToCopy = `${baseUrl}#${currentVideoId}`;
+            
+            try {
+                await navigator.clipboard.writeText(textToCopy);
+                
+                // Visual feedback
+                const originalText = copyBtn.innerHTML;
+                copyBtn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+                copyBtn.classList.add('copied');
+                
+                showSuccess('Link Copied', 'Paste it in Discord to embed the video');
+                
+                // Reset button after 2 seconds
+                setTimeout(() => {
+                    copyBtn.innerHTML = originalText;
+                    copyBtn.classList.remove('copied');
+                }, 2000);
+                
+            } catch (err) {
+                console.error('Failed to copy:', err);
+                showError('Copy Failed', 'Could not copy to clipboard');
+            }
+        }
+        
+        // Clear everything
+        function clearAll() {
+            streamableUrl.value = '';
+            videoPlayer.src = '';
+            videoPlayer.classList.add('hidden');
+            loadingState.classList.add('hidden');
+            emptyState.classList.remove('hidden');
+            videoIdDisplay.textContent = 'No Video';
+            shareLink.textContent = 'Paste a Streamable link to generate shareable URL';
+            copyBtn.disabled = true;
+            currentVideoId = '';
+            window.location.hash = '';
+            
+            // Reset metadata
+            document.title = 'Streamable Viewer';
+            showSuccess('Cleared', 'Ready for new video');
+        }
+        
+        // Handle URL hash changes (bookmark support)
+        function handleHashChange() {
+            const hash = window.location.hash.substring(1);
+            if (hash) {
+                const videoId = extractStreamableId(hash);
+                if (videoId) {
+                    streamableUrl.value = `https://streamable.com/${videoId}`;
+                    loadVideo(videoId);
+                }
+            }
+        }
+        
+        // Create particles background
+        function createParticles() {
+            const particleCount = 30;
+            
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                
+                // Random properties
+                const size = Math.random() * 4 + 1;
+                const posX = Math.random() * 100;
+                const posY = Math.random() * 100;
+                const opacity = Math.random() * 0.1 + 0.05;
+                const duration = Math.random() * 20 + 10;
+                
+                particle.style.width = `${size}px`;
+                particle.style.height = `${size}px`;
+                particle.style.left = `${posX}%`;
+                particle.style.top = `${posY}%`;
+                particle.style.opacity = opacity;
+                particle.style.animation = `float ${duration}s linear infinite`;
+                
+                // Add float animation
+                const style = document.createElement('style');
+                style.textContent = `
+                    @keyframes float {
+                        0% { transform: translate(0, 0) rotate(0deg); }
+                        100% { transform: translate(${Math.random() * 100 - 50}px, ${Math.random() * 100 - 50}px) rotate(360deg); }
+                    }
+                `;
+                document.head.appendChild(style);
+                
+                particles.appendChild(particle);
+            }
+        }
+        
+        // Event Listeners
+        loadBtn.addEventListener('click', () => {
+            const url = streamableUrl.value;
+            const videoId = extractStreamableId(url);
+            
+            if (videoId) {
+                loadVideo(videoId);
+            } else {
+                showError('Invalid Link', 'Please enter a valid Streamable URL or ID');
+            }
+        });
+        
+        streamableUrl.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                loadBtn.click();
+            }
+        });
+        
+        clearBtn.addEventListener('click', clearAll);
+        copyBtn.addEventListener('click', copyToClipboard);
+        
+        fullscreenBtn.addEventListener('click', () => {
+            if (videoPlayer.requestFullscreen) {
+                videoPlayer.requestFullscreen();
+            } else if (videoPlayer.mozRequestFullScreen) {
+                videoPlayer.mozRequestFullScreen();
+            } else if (videoPlayer.webkitRequestFullscreen) {
+                videoPlayer.webkitRequestFullscreen();
+            } else if (videoPlayer.msRequestFullscreen) {
+                videoPlayer.msRequestFullscreen();
+            }
+        });
+        
+        // Handle hash changes
+        window.addEventListener('hashchange', handleHashChange);
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            createParticles();
+            handleHashChange(); // Check for hash on load
+            
+            // Auto-focus input
+            streamableUrl.focus();
+        });
+        
+        // Example links for quick testing
+        console.log('Try these example Streamable IDs:');
+        console.log('- abc123 (example)');
+        console.log('- oo8p9h');
+        console.log('- 8p9hoo');
+        
+        // Auto-load from hash
+        if (window.location.hash) {
+            const hash = window.location.hash.substring(1);
+            const videoId = extractStreamableId(hash);
+            if (videoId) {
+                streamableUrl.value = `https://streamable.com/${videoId}`;
+                setTimeout(() => loadVideo(videoId), 500);
+            }
         }
     </script>
 </body>
