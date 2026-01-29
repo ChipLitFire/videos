@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Streamable Discord Fix</title>
+    
+    <!-- Discord Embed Metadata -->
+    <meta property="og:title" content="Streamable Discord Fix">
+    <meta property="og:description" content="Watch Streamable videos in Discord">
+    <meta property="og:type" content="video.other">
+    <meta property="og:video:type" content="text/html">
+    <meta property="og:video:width" content="1280">
+    <meta property="og:video:height" content="720">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: #36393f;
+            color: white;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            flex: 1;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+        }
+        
+        h1 {
+            color: #5865F2;
+            margin-bottom: 10px;
+        }
+        
+        .video-container {
+            background: #2f3136;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .video-wrapper {
+            position: relative;
+            padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+            height: 0;
+            overflow: hidden;
+            border-radius: 8px;
+            background: #000;
+        }
+        
+        .video-wrapper iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        
+        .input-section {
+            background: #2f3136;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        input[type="text"] {
+            flex: 1;
+            padding: 12px;
+            background: #40444b;
+            border: 1px solid #202225;
+            border-radius: 5px;
+            color: white;
+            font-size: 14px;
+        }
+        
+        input[type="text"]::placeholder {
+            color: #b9bbbe;
+        }
+        
+        button {
+            background: #5865F2;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+        
+        button:hover {
+            background: #4752C4;
+        }
+        
+        .share-section {
+            background: #2f3136;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        
+        .share-link {
+            background: #40444b;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 10px;
+            word-break: break-all;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        
+        .share-link a {
+            color: #00b0f4;
+            text-decoration: none;
+        }
+        
+        .share-link a:hover {
+            text-decoration: underline;
+        }
+        
+        .how-to-use {
+            background: #2f3136;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        
+        .how-to-use ol {
+            padding-left: 20px;
+            margin-top: 10px;
+        }
+        
+        .how-to-use li {
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+        
+        .no-video {
+            text-align: center;
+            padding: 40px;
+            color: #b9bbbe;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .status {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+        }
+        
+        .success {
+            background: rgba(88, 101, 242, 0.2);
+            color: #b5bae3;
+        }
+        
+        .error {
+            background: rgba(237, 66, 69, 0.2);
+            color: #e3b5b5;
+        }
+        
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .input-group {
+                flex-direction: column;
+            }
+            
+            button {
+                width: 100%;
+            }
+        }
+        
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: #b9bbbe;
+            font-size: 14px;
+            margin-top: auto;
+        }
+        
+        /* Loading spinner */
+        .spinner {
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            border-top: 3px solid #5865F2;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .copy-btn {
+            background: #4f545c;
+            padding: 8px 15px;
+            font-size: 12px;
+            margin-top: 10px;
+        }
+        
+        .copy-btn:hover {
+            background: #5d6269;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Streamable Discord Fix</h1>
+            <p>Watch Streamable videos in Discord embeds using URL fragments</p>
+        </header>
+        
+        <div id="videoContainer" class="video-container hidden">
+            <div class="video-wrapper">
+                <iframe id="videoPlayer" allowfullscreen></iframe>
+            </div>
+        </div>
+        
+        <div id="noVideo" class="no-video">
+            <p>Enter a Streamable ID below to watch or share a video</p>
+            <div class="spinner hidden" id="loadingSpinner"></div>
+        </div>
+        
+        <div class="input-section">
+            <h2>Enter Streamable Video ID</h2>
+            <div class="input-group">
+                <input type="text" id="videoIdInput" placeholder="Enter Streamable ID (e.g., pneoknwein)">
+                <button id="loadBtn">Load Video</button>
+            </div>
+            <div id="status" class="status hidden"></div>
+        </div>
+        
+        <div class="share-section">
+            <h2>Share Video</h2>
+            <p>Copy this link and paste in Discord:</p>
+            <div class="share-link">
+                <a id="shareLink" href="#" target="_blank"></a>
+            </div>
+            <button id="copyBtn" class="copy-btn">Copy Link</button>
+        </div>
+        
+        <div class="how-to-use">
+            <h2>How to Use</h2>
+            <ol>
+                <li>Find your Streamable video ID (the part after streamable.com/)</li>
+                <li>Enter it above and click "Load Video"</li>
+                <li>Copy the generated share link</li>
+                <li>Paste the link in Discord</li>
+                <li>OR bookmark: <code>https://your-site.web.app#[video-id]</code></li>
+            </ol>
+            <p><strong>Pro Tip:</strong> You can directly use <code>https://your-site.web.app#[streamable-id]</code> without the input form!</p>
+        </div>
+    </div>
+    
+    <footer>
+        <p>This tool helps you watch Streamable videos in Discord embeds. No server-side code needed.</p>
+    </footer>
+
+    <script>
+        // DOM Elements
+        const videoContainer = document.getElementById('videoContainer');
+        const noVideo = document.getElementById('noVideo');
+        const videoPlayer = document.getElementById('videoPlayer');
+        const videoIdInput = document.getElementById('videoIdInput');
+        const loadBtn = document.getElementById('loadBtn');
+        const status = document.getElementById('status');
+        const shareLink = document.getElementById('shareLink');
+        const copyBtn = document.getElementById('copyBtn');
+        const loadingSpinner = document.getElementById('loadingSpinner');
+        
+        // Discord embed metadata elements
+        const metaTitle = document.querySelector('meta[property="og:title"]');
+        const metaDescription = document.querySelector('meta[property="og:description"]');
+        const metaVideo = document.querySelector('meta[property="og:video"]');
+        
+        // Extract video ID from URL hash
+        function getVideoIdFromHash() {
+            const hash = window.location.hash.substring(1);
+            // Clean the hash - remove any non-alphanumeric characters
+            return hash.replace(/[^a-zA-Z0-9]/g, '');
+        }
+        
+        // Update URL hash
+        function updateHash(videoId) {
+            window.location.hash = videoId;
+        }
+        
+        // Load video by ID
+        function loadVideo(videoId) {
+            if (!videoId) {
+                showError('Please enter a valid Streamable video ID');
+                return false;
+            }
+            
+            // Show loading
+            loadingSpinner.classList.remove('hidden');
+            status.classList.add('hidden');
+            
+            // Test if the video exists by trying to load it
+            const testUrl = `https://streamable.com/o/${videoId}`;
+            
+            // Create a hidden iframe to test the video
+            const testIframe = document.createElement('iframe');
+            testIframe.style.display = 'none';
+            testIframe.src = testUrl;
+            
+            testIframe.onload = function() {
+                loadingSpinner.classList.add('hidden');
+                
+                // Video exists, proceed to embed
+                const embedUrl = `https://streamable.com/e/${videoId}?autoplay=1`;
+                
+                // Update video player
+                videoPlayer.src = embedUrl;
+                
+                // Show video container
+                videoContainer.classList.remove('hidden');
+                noVideo.classList.add('hidden');
+                
+                // Update share link
+                const currentUrl = window.location.origin + window.location.pathname;
+                const shareUrl = `${currentUrl}#${videoId}`;
+                shareLink.textContent = shareUrl;
+                shareLink.href = shareUrl;
+                
+                // Update Discord embed metadata
+                metaTitle.content = `Streamable Video: ${videoId}`;
+                metaDescription.content = `Watch Streamable video ${videoId} in Discord`;
+                
+                // Update Discord embed video URL (important!)
+                const metaTags = document.querySelectorAll('meta[property^="og:video"]');
+                metaTags.forEach(tag => {
+                    if (tag.getAttribute('property') === 'og:video') {
+                        tag.content = shareUrl;
+                    }
+                    if (tag.getAttribute('property') === 'og:video:url') {
+                        tag.content = shareUrl;
+                    }
+                });
+                
+                showSuccess(`Video ${videoId} loaded successfully!`);
+            };
+            
+            testIframe.onerror = function() {
+                loadingSpinner.classList.add('hidden');
+                showError(`Video "${videoId}" not found on Streamable`);
+            };
+            
+            document.body.appendChild(testIframe);
+            
+            // Remove test iframe after a short delay
+            setTimeout(() => {
+                if (document.body.contains(testIframe)) {
+                    document.body.removeChild(testIframe);
+                }
+            }, 5000);
+            
+            return true;
+        }
+        
+        // Show success message
+        function showSuccess(message) {
+            status.textContent = message;
+            status.className = 'status success';
+            status.classList.remove('hidden');
+            setTimeout(() => {
+                status.classList.add('hidden');
+            }, 3000);
+        }
+        
+        // Show error message
+        function showError(message) {
+            status.textContent = message;
+            status.className = 'status error';
+            status.classList.remove('hidden');
+            setTimeout(() => {
+                status.classList.add('hidden');
+            }, 5000);
+        }
+        
+        // Copy share link to clipboard
+        function copyToClipboard() {
+            const text = shareLink.textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                showSuccess('Link copied to clipboard!');
+            }).catch(err => {
+                showError('Failed to copy link: ' + err);
+            });
+        }
+        
+        // Event Listeners
+        loadBtn.addEventListener('click', () => {
+            const videoId = videoIdInput.value.trim();
+            if (loadVideo(videoId)) {
+                updateHash(videoId);
+            }
+        });
+        
+        videoIdInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                loadBtn.click();
+            }
+        });
+        
+        copyBtn.addEventListener('click', copyToClipboard);
+        
+        // Handle URL hash changes
+        window.addEventListener('hashchange', () => {
+            const videoId = getVideoIdFromHash();
+            if (videoId) {
+                videoIdInput.value = videoId;
+                loadVideo(videoId);
+            }
+        });
+        
+        // Check for video ID on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            const initialVideoId = getVideoIdFromHash();
+            if (initialVideoId) {
+                videoIdInput.value = initialVideoId;
+                loadVideo(initialVideoId);
+            }
+        });
+        
+        // Also update metadata when video loads (for Discord crawler)
+        function updatePageMetadata(videoId) {
+            // Update page title
+            document.title = `Streamable: ${videoId}`;
+            
+            // Update meta tags for better Discord embedding
+            const metaTags = [
+                { property: 'og:title', content: `Streamable Video: ${videoId}` },
+                { property: 'og:description', content: 'Watch this Streamable video in Discord' },
+                { property: 'og:url', content: window.location.href },
+                { property: 'og:image', content: `https://cdn-cf-east.streamable.com/image/${videoId}.jpg` },
+                { property: 'og:video', content: window.location.href },
+                { property: 'og:video:url', content: window.location.href },
+                { property: 'og:video:type', content: 'text/html' },
+                { property: 'og:video:width', content: '1280' },
+                { property: 'og:video:height', content: '720' }
+            ];
+            
+            metaTags.forEach(meta => {
+                let tag = document.querySelector(`meta[property="${meta.property}"]`);
+                if (!tag) {
+                    tag = document.createElement('meta');
+                    tag.setAttribute('property', meta.property);
+                    document.head.appendChild(tag);
+                }
+                tag.setAttribute('content', meta.content);
+            });
+        }
+    </script>
+</body>
+</html>
